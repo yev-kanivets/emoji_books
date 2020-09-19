@@ -4,12 +4,17 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.squareup.sqldelight.android.AndroidSqliteDriver
 import kotlinx.android.synthetic.main.activity_main.fabAddBook
 import kotlinx.android.synthetic.main.activity_main.recyclerView
 
 class MainActivity : AppCompatActivity(), BookAdapter.Listener {
 
-    private val bookRepository = BookRepository(this)
+    private val bookRepository by lazy {
+        BookRepository(
+            sqlDriver = AndroidSqliteDriver(EBDatabase.Schema, applicationContext, "database")
+        )
+    }
 
     private val adapter by lazy { BookAdapter(bookRepository.getAll(), listener = this) }
 
