@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?android:attr/selectableItemBackground"
+    android:gravity="center"
+    android:orientation="horizontal"
+    >
+
+  <TextView
+      android:id="@+id/tvEmoji"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:contentDescription="@string/emoji"
+      android:paddingHorizontal="16dp"
+      android:paddingVertical="8dp"
+      android:textSize="32dp"
+      tools:ignore="SpUsage"
+      tools:text="✅"
+      />
+
+  <LinearLayout
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:orientation="vertical"
+      >
+
+    <TextView
+        android:id="@+id/tvTitle"
+        style="@style/TextAppearance.AppCompat.Body2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/title"
+        android:maxLines="1"
+        tools:text="Title"
+        />
+
+    <TextView
+        android:id="@+id/tvAuthor"
+        style="@style/TextAppearance.AppCompat.Body1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:contentDescription="@string/author"
+        android:maxLines="1"
+        tools:text="Subtitle"
+        />
+
+  </LinearLayout>
+
+  <ImageButton
+      android:id="@+id/btnDelete"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:background="?android:attr/selectableItemBackground"
+      android:contentDescription="@string/delete"
+      android:padding="16dp"
+      android:src="@drawable/ic_delete"
+      />
+
+</LinearLayout>
