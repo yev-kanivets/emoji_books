@@ -9,9 +9,9 @@ import kotlinx.android.synthetic.main.activity_main.recyclerView
 
 class MainActivity : AppCompatActivity(), BookAdapter.Listener {
 
-    private val bookRepository = BookRepository()
+    private val bookRepository = BookRepository(this)
 
-    private val adapter = BookAdapter(bookRepository.getAll(), listener = this)
+    private val adapter by lazy { BookAdapter(bookRepository.getAll(), listener = this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
