@@ -4,19 +4,21 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_main.fabAddBook
 import kotlinx.android.synthetic.main.activity_main.recyclerView
 
 class MainActivity : AppCompatActivity(), BookAdapter.Listener {
 
-    private val bookRepository = BookRepository()
+    private val bookRepository by lazy { BookRepository() }
 
-    private val adapter = BookAdapter(bookRepository.getAll(), listener = this)
+    private val adapter by lazy { BookAdapter(bookRepository.getAll(), listener = this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        initRealm()
         initRecycler()
         initFab()
     }
@@ -29,6 +31,8 @@ class MainActivity : AppCompatActivity(), BookAdapter.Listener {
     private fun initFab() = fabAddBook.setOnClickListener {
         startActivityForResult(BookActivity.newIntent(this), REQUEST_ADD_BOOK)
     }
+
+    private fun initRealm() = Realm.init(this)
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)

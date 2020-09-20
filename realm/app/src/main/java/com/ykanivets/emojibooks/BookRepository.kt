@@ -1,24 +1,56 @@
 package com.ykanivets.emojibooks
 
+import io.realm.Realm
+import io.realm.RealmObject
+import io.realm.annotations.PrimaryKey
+import io.realm.kotlin.where
+import kotlin.random.Random
+
 class BookRepository {
 
-    private val books = mutableListOf<Book>(
-        Book(0, "\uD83D\uDE31", "The Shining", "Stephen King")
+    private val realm = Realm.getDefaultInstance()
+
+    fun getAll(): List<Book> {
+        val realmBooks = realm.where<RealmBook>().findAll()
+        return realm.copyFromRealm(realmBooks).map { it.toBook() }
+    }
+
+    fun add(book: Book) {
+        realm.beginTransaction()
+        realm.copyToRealm(book.toRealmBook())
+        realm.commitTransaction()
+    }
+
+    fun update(book: Book) {
+        realm.beginTransaction()
+        realm.copyToRealmOrUpdate(book.toRealmBook())
+        realm.commitTransaction()
+    }
+
+    fun delete(book: Book) {
+        realm.beginTransaction()
+        realm.where<RealmBook>().equalTo("id", book.id).findAll().deleteAllFromRealm()
+        realm.commitTransaction()
+    }
+
+    private fun RealmBook.toBook() = Book(
+        id = id,
+        emoji = emoji,
+        title = title,
+        author = author
     )
 
-    fun getAll(): List<Book> = books
-
-    fun add(book: Book): Boolean {
-        return books.add(book.copy(id = books.size.toLong()))
-    }
-
-    fun update(book: Book): Boolean {
-        val index = books.indexOfFirst { it.id == book.id }.takeUnless { it == -1 } ?: return false
-        books[index] = book
-        return true
-    }
-
-    fun delete(book: Book): Boolean {
-        return books.remove(book)
-    }
+    private fun Book.toRealmBook() = RealmBook(
+        id = id ?: Random.nextLong(),
+        emoji = emoji,
+        title = title,
+        author = author
+    )
 }
+
+open class RealmBook(
+    @PrimaryKey var id: Long = -1,
+    var emoji: String = "",
+    var title: String = "",
+    var author: String = ""
+) : RealmObject()
