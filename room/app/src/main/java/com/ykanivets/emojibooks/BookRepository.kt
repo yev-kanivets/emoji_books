@@ -1,24 +1,79 @@
 package com.ykanivets.emojibooks
 
-class BookRepository {
+import android.content.Context
+import androidx.room.ColumnInfo
+import androidx.room.Dao
+import androidx.room.Database
+import androidx.room.Delete
+import androidx.room.Entity
+import androidx.room.Insert
+import androidx.room.PrimaryKey
+import androidx.room.Query
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.room.Update
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-    private val books = mutableListOf<Book>(
-        Book(0, "\uD83D\uDE31", "The Shining", "Stephen King")
+class BookRepository(
+    context: Context
+) {
+
+    private val bookDao = Room.databaseBuilder(
+        context.applicationContext,
+        BookRoomDatabase::class.java,
+        "database"
+    ).build().bookDao()
+
+    suspend fun getAll() = withContext(Dispatchers.IO) { bookDao.getAll().map { it.toBook() } }
+
+    suspend fun add(book: Book) = bookDao.add(book.toDbBook())
+
+    suspend fun update(book: Book) = bookDao.update(book.toDbBook())
+
+    suspend fun delete(book: Book) = bookDao.delete(book.toDbBook())
+
+    private fun DbBook.toBook() = Book(
+        id = id,
+        emoji = emoji,
+        title = title,
+        author = author
     )
 
-    fun getAll(): List<Book> = books
+    private fun Book.toDbBook() = DbBook(
+        id = id ?: -1,
+        emoji = emoji,
+        title = title,
+        author = author
+    )
+}
 
-    fun add(book: Book): Boolean {
-        return books.add(book.copy(id = books.size.toLong()))
-    }
+@Entity(tableName = "DbBook")
+private class DbBook(
+    @PrimaryKey @ColumnInfo(name = "id") val id: Long,
+    @ColumnInfo(name = "emoji") val emoji: String,
+    @ColumnInfo(name = "title") val title: String,
+    @ColumnInfo(name = "author") val author: String
+)
 
-    fun update(book: Book): Boolean {
-        val index = books.indexOfFirst { it.id == book.id }.takeUnless { it == -1 } ?: return false
-        books[index] = book
-        return true
-    }
+@Dao
+private interface BookDao {
 
-    fun delete(book: Book): Boolean {
-        return books.remove(book)
-    }
+    @Query("SELECT * from DbBook")
+    fun getAll(): List<DbBook>
+
+    @Insert
+    suspend fun add(book: DbBook)
+
+    @Update
+    suspend fun update(book: DbBook)
+
+    @Delete
+    suspend fun delete(book: DbBook)
+}
+
+@Database(entities = [DbBook::class], version = 1, exportSchema = false)
+private abstract class BookRoomDatabase : RoomDatabase() {
+
+    abstract fun bookDao(): BookDao
 }
