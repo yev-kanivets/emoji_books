@@ -4,13 +4,18 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.squareup.sqldelight.android.AndroidSqliteDriver
 import io.realm.Realm
 import kotlinx.android.synthetic.main.activity_main.fabAddBook
 import kotlinx.android.synthetic.main.activity_main.recyclerView
 
 class MainActivity : AppCompatActivity(), BookAdapter.Listener {
 
-    private val bookRepository by lazy { BookRepository() }
+    private val bookRepository by lazy {
+        BookRepository(
+            sqlDriver = AndroidSqliteDriver(EBDatabase.Schema, applicationContext, "database")
+        )
+    }
 
     private val adapter by lazy { BookAdapter(bookRepository.getAll(), listener = this) }
 
@@ -32,7 +37,10 @@ class MainActivity : AppCompatActivity(), BookAdapter.Listener {
         startActivityForResult(BookActivity.newIntent(this), REQUEST_ADD_BOOK)
     }
 
-    private fun initRealm() = Realm.init(this)
+    private fun initRealm() {
+        Realm.init(this)
+        RealmMigration(bookRepository).executeIfNeeded()
+    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
