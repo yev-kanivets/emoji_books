@@ -4,21 +4,19 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.squareup.sqldelight.android.AndroidSqliteDriver
 import kotlinx.android.synthetic.main.activity_main.fabAddBook
 import kotlinx.android.synthetic.main.activity_main.recyclerView
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity(), BookAdapter.Listener {
 
-    private val bookRepository by lazy { BookRepository(this) }
+    private val bookRepository by lazy {
+        BookRepository(
+            sqlDriver = AndroidSqliteDriver(EBDatabase.Schema, applicationContext, "database")
+        )
+    }
 
-    private val adapter by lazy { BookAdapter(emptyList(), listener = this) }
-
-    private val job = SupervisorJob()
-    private val uiScope = CoroutineScope(Dispatchers.Main + job)
+    private val adapter by lazy { BookAdapter(bookRepository.getAll(), listener = this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,8 +24,6 @@ class MainActivity : AppCompatActivity(), BookAdapter.Listener {
 
         initRecycler()
         initFab()
-
-        refresh()
     }
 
     private fun initRecycler() {
@@ -45,16 +41,12 @@ class MainActivity : AppCompatActivity(), BookAdapter.Listener {
         if (resultCode == RESULT_OK) {
             when (requestCode) {
                 REQUEST_ADD_BOOK -> data?.getBookExtra()?.let { bookExtra ->
-                    uiScope.launch {
-                        bookRepository.add(bookExtra.toBook())
-                        refresh()
-                    }
+                    bookRepository.add(bookExtra.toBook())
+                    refresh()
                 }
                 REQUEST_UPDATE_BOOK -> data?.getBookExtra()?.let { bookExtra ->
-                    uiScope.launch {
-                        bookRepository.update(bookExtra.toBook())
-                        refresh()
-                    }
+                    bookRepository.update(bookExtra.toBook())
+                    refresh()
                 }
             }
         }
@@ -64,12 +56,12 @@ class MainActivity : AppCompatActivity(), BookAdapter.Listener {
         startActivityForResult(BookActivity.newIntent(this, book.toBookExtra()), REQUEST_UPDATE_BOOK)
     }
 
-    override fun onBookDeleteClicked(book: Book) = uiScope.launch {
+    override fun onBookDeleteClicked(book: Book) {
         bookRepository.delete(book)
         refresh()
-    }.let { Unit }
+    }
 
-    private fun refresh()  = uiScope.launch {
+    private fun refresh() {
         adapter.books = bookRepository.getAll()
         adapter.notifyDataSetChanged()
     }
