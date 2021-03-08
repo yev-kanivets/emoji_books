@@ -1,0 +1,6 @@
+rootProject.name = "Emoji Books"
+
+include 'app'
+include 'common'
+
+enableFeaturePreview('GRADLE_METADATA')

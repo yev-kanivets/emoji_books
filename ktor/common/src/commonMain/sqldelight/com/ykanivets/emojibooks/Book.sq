@@ -1,0 +1,18 @@
+CREATE TABLE DbBook (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    emoji TEXT NOT NULL,
+    title TEXT NOT NULL,
+    author TEXT NOT NULL
+);
+
+getAll:
+SELECT * FROM DbBook;
+
+add:
+INSERT OR REPLACE INTO DbBook(emoji, title, author) VALUES(?,?,?);
+
+update:
+INSERT OR REPLACE INTO DbBook(id, emoji, title, author) VALUES(?,?,?,?);
+
+delete:
+DELETE FROM DbBook WHERE id = ?;
